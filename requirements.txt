@@ -1,0 +1,6 @@
+torch #==1.13.1
+torchvision #==0.14.1
+tqdm #==4.65.0
+numpy #==1.23.5
+fvcore #https://github.com/facebookresearch/fvcore
+timm #==0.9.16 
