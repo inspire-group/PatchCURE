@@ -1,8 +1,8 @@
 ## Overview
 
-This document provides a detailed guide to reproduce all experimental results in the main body of our PatchCURE paper (). This was created initially for Artifact Evaluation at USENIX Security Symposium.
+This document provides a detailed guide to reproduce all experimental results in the main body of our PatchCURE paper. This was created initially for Artifact Evaluation at USENIX Security Symposium.
 
-Note: there is a slight difference in table/figure ordering between our [camera ready version](https://www.usenix.org/conference/usenixsecurity24/presentation/xiang-chong) and our extended [technical report](https://arxiv.org/abs/2310.13076) on arXiv. This document is for the camera ready.
+**Note:** there is a slight difference in table/figure ordering between our [camera-ready version](https://www.usenix.org/conference/usenixsecurity24/presentation/xiang-chong) and our extended [technical report](https://arxiv.org/abs/2310.13076) on arXiv. This document is for the camera ready.
 
 ## Setup
 
@@ -10,10 +10,10 @@ Note: there is a slight difference in table/figure ordering between our [camera 
 Below is an overview of relevant files for the artifact evaluation. Please organize the files within the specified structure.
 
 ```shell
-├── README.md                        # this file 
+├── README.md                        # general purpose readme file 
 ├── reproducibility.md               # this file 
 ├── requirements.txt                 # required packages
-├── example_cmds.sh                  # command to reproduce PatchCURE results reported in the paper
+├── example_cmds.sh                  # example commands to reproduce PatchCURE results reported in the paper (a subset of commands detailed in this doc)
 | 
 ├── main.py                          # PatchCURE entry point.  
 | 
@@ -35,13 +35,13 @@ Below is an overview of relevant files for the artifact evaluation. Please organ
 
 #### Environment
 
-1. Create a conda environment`conda create -n ae python=3.10`
+1. Create a conda environment `conda create -n ae python=3.10`
 
 2. Install PyTorch with GPU support. [1.13.1 version](https://pytorch.org/get-started/previous-versions/#v1131)  `conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pytorch-cuda=11.7 -c pytorch -c nvidia`
 
 3. Install other packages `pip install -r requirement.txt`
 
-Notes: It might be some imcomptibility issue if using other versions of the library. It is recommended to follow the instructions above, which will install `python3.10` `torch==1.13.1` and `timm==0.9.16`.
+**Note:** It might be some incompatibility issue with other versions of the library. It is recommended to follow the instructions above, which will install `python3.10` `torch==1.13.1` and `timm==0.9.16`.
 
 #### Datasets
 - [ImageNet](https://image-net.org/download.php) (ILSVRC2012) - requires manual download; also available on [Kaggle](https://www.kaggle.com/c/imagenet-object-localization-challenge/data)
@@ -86,7 +86,7 @@ vitsrf2x2_split3_masked_cifar.pth.tar
 
 In this section, we list all the commands used for getting experiment results for every table and figure in the main body.
 
-1. Our evaluation metrics are **clean accuracy**, **certified robust accuracy**, **Inference throughput**, which will be outputted to the console. Below is the expected output after running `python main.py --model  vitsrf14x2_masked --patch-size 32 --mask-stride 1 --certify  --runtime --batch-size 4`. In this example, the clean accuracy of PCURE-ViT14x2-k12 defense is 78.3%, the certified robust accuracy is 44.2%, its throughput with a batch size of 4 is 189.9 img/s. These numbers match the results reported in Table 3 (PCURE-ViT14x2-k12).
+1. Our evaluation metrics are **clean accuracy**, **certified robust accuracy**, **Inference throughput**, which will be outputted to the console. Below is the expected output after running `python main.py --model  vitsrf14x2_masked --patch-size 32 --mask-stride 1 --certify  --runtime --batch-size 4`. In this example, the clean accuracy of PCURE-ViT14x2-k12 defense is 78.3%, the certified robust accuracy is 44.2%, and its throughput with a batch size of 4 is 189.9 img/s. These numbers match the results reported in Table 3 (PCURE-ViT14x2-k12).
 
 ```
 Clean Accuracy: 0.78338
@@ -140,6 +140,7 @@ python main.py --model  bagnet45_masked --patch-size 32 --mask-stride 1 --certif
 python main.py --model  bagnet33_masked --patch-size 32 --mask-stride 1 --certify  --runtime
 #PCURE-BagNet45k50
 python main.py --model  bagnet17_masked --patch-size 32 --mask-stride 1 --certify  --runtime
+
 ### SRF+LRF PatchCURE # takes 0.5-2 hours for the entire ImageNet dataset
 # PCURE-ViT14x2-k11
 python main.py --model  vitsrf14x2_split11_masked --patch-size 32 --mask-stride 1 --certify  --runtime
@@ -151,7 +152,8 @@ python main.py --model  vitsrf14x2_split9_masked --patch-size 32 --mask-stride 1
 python main.py --model  vitsrf14x2_split6_masked --patch-size 32 --mask-stride 1 --certify  --runtime
 # PCURE-ViT14x2-k3
 python main.py --model  vitsrf14x2_split3_masked --patch-size 32 --mask-stride 1 --certify  --runtime
-### LRF-only PatchCURE (k=0) # the certification can takes a long time. you can add `--num-img 1000` to select a subset for evaluation.
+
+### LRF-only PatchCURE (k=0) # the certification can take a long time. you can add `--num-img 1000` to select a subset for evaluation.
 # PCURE-ViT14x2-k0
 python main.py --model  vitsrf14x2_split0_masked --patch-size 32 --mask-stride 1 --certify   --runtime  # ~2 hours  
 # PCURE-ViT14x1-k0
@@ -212,23 +214,22 @@ python main.py --model  vitsrf14x2_split4_masked --patch-size 32 --mask-stride 1
 python main.py --model  vitsrf14x2_split3_masked --patch-size 32 --mask-stride 1 --certify  --runtime
 python main.py --model  vitsrf14x2_split2_masked --patch-size 32 --mask-stride 1 --certify  --runtime
 python main.py --model  vitsrf14x2_split1_masked --patch-size 32 --mask-stride 1 --certify  --runtime
-
 ```
 
 #### Figure 6: main evaluation (extended visualization of Table 3)
 
-see commands for Table 3. Varying the `--model` with different small receptive fields (14x2, 14x1, 2x2) and splitting location can give all PCURE points in the figure.
+see commands for Table 3. Varying the `--model` with different small receptive fields (14x2, 14x1, 2x2) and splitting locations can give all PCURE points in the figure.
 
 
 #### Figure 7: defense with different patch sizes
 
-The following commands are for Figure 7 (different models against different pacth sizes).
+The following commands are for Figure 7 (different models against different patch sizes).
 
 
 ```shell
 # replace the --model with one of (vitsrf14x2_masked, vitsrf14x1_masked, vitsrf2x2_masked, mae_masked)
 # vitsrf14x2_masked, vitsrf14x1_masked, vitsrf2x2_masked should take less than one hour to run each 
-# mae_masked can takes up to 3 days, feel free to set the flag --num-img to a small number like 1000 to reduce experiment runtime
+# mae_masked can take up to 3 days, feel free to set the flag --num-img to a small number like 1000 to reduce experiment runtime
 python main.py --model  vitsrf14x2_masked --patch-size 32 --mask-stride 1 --certify --runtime
 python main.py --model  vitsrf14x2_masked --patch-size 48 --mask-stride 1 --certify --runtime
 python main.py --model  vitsrf14x2_masked --patch-size 64 --mask-stride 1 --certify --runtime
