@@ -1,0 +1,8 @@
+*.log
+*.pyc
+*.out
+usenix-ae/
+data/
+data
+checkpoints/
+launch*

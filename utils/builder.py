@@ -1,5 +1,5 @@
 from math import ceil
-from utils.pcure import PatchCURE,SecureLayer,SecurePooling
+from utils.pcure import PatchCURE,SecureLayer,SecurePooling,PatchGuardPooling,CBNPooling,MRPooling,MRPC
 from utils.bagnet import BAGNET_FUNC
 from utils.vit_srf import vit_base_patch16_224_srf,vit_large_patch16_224_srf
 from utils.split import split_resnet50_like,split_vit_like
@@ -26,7 +26,13 @@ def get_data_loader(args):
 		ds_transform = create_transform(**data_cfg)
 		val_dataset = datasets.ImageFolder(os.path.join(DATA_DIR,'val'),ds_transform) 
 	else:
-		raise NotImplementedError("only support imagenet for now")
+		data_cfg = {'input_size': (3, 224, 224), 'interpolation': 'bicubic', 'mean': IMAGENET_DEFAULT_MEAN, 'std': IMAGENET_DEFAULT_STD, 'crop_pct': 1}#, 'crop_mode': 'center'} #
+		ds_transform = create_transform(**data_cfg)
+		if args.dataset == 'cifar':
+			val_dataset = datasets.CIFAR10(root=DATA_DIR, train=False, download=True, transform=ds_transform)
+		else:
+			raise NotImplementedError("only support imagenet for now")
+
 
 	np.random.seed(233333333)#random seed for selecting test images
 	if args.num_img>0: #select a random subset of args.num_img for experiments
@@ -47,6 +53,8 @@ def build_pcure_model(args):
 	MODEL_DIR=os.path.join('.',args.model_dir)
 	split_point = -1 # default value --> SRF-only or LRF-only mode 
 	MODEL_NAME = args.model.split('_')[:-1]
+	if args.dataset != 'imagenet':
+		MODEL_NAME = MODEL_NAME[:-1] # remove the suffix for dataset name
 	if len(MODEL_NAME) == 1: # LRF-only or SRF-only
 		MODEL_NAME = MODEL_NAME[0]
 		split_point = -1 
@@ -57,6 +65,9 @@ def build_pcure_model(args):
 
 	lrf = None 
 	srf = None
+
+	if args.dataset == 'imagenet': num_classes = 1000 
+	if args.dataset == 'cifar': num_classes = 10
 
 	#init SRF if needed 
 	if 'bagnet' in MODEL_NAME: #bagnet
@@ -81,8 +92,10 @@ def build_pcure_model(args):
 	# init LRF if needed 
 	if 'resnet50' in MODEL_NAME or ('bagnet' in MODEL_NAME and split_point>0):
 		lrf = timm.create_model('resnet50')
+		lrf.reset_classifier(num_classes=num_classes)
 	elif 'mae' in MODEL_NAME or ('vitsrf' in MODEL_NAME and split_point>=0):
 		lrf = timm.create_model('vit_base_patch16_224',global_pool='avg') #the MAE setup
+		lrf.reset_classifier(num_classes=num_classes)
 
 	# calculate the corruption size in the secure layer
 	patch_size = (args.patch_size,args.patch_size)
@@ -132,7 +145,16 @@ def build_pcure_model(args):
 			model = PatchCURE(nn.Identity(),secure_layer) # no SRF --> use nn.Indentify for the SRF sub-model
 		elif srf:
 			load_checkpoint(srf,checkpoint_path)#,remap=False)
-			secure_layer = SecurePooling(input_size=feature_size,mask_size=mask_size,mask_stride=mask_stride)
+			if args.alg=='cbn':# clipped bagnet
+				secure_layer = CBNPooling()
+			elif args.alg=='pg': #patchguard
+				secure_layer = PatchGuardPooling(mask_size=mask_size)
+			elif args.alg=='pcure': # pcure srf-only
+				secure_layer = SecurePooling(input_size=feature_size,mask_size=mask_size,mask_stride=mask_stride)
+			elif args.alg == 'mr':
+				secure_layer = MRPooling(input_size=feature_size,mask_size=mask_size,mask_stride=mask_stride)
+			else:
+				raise NotImplementedError
 			model = PatchCURE(srf,secure_layer)
 	else: #hybrid
 		if 'vitsrf' in args.model: 
@@ -144,7 +166,13 @@ def build_pcure_model(args):
 		elif 'bagnet' in args.model:
 			raise NotImplementedError('only support SRF-only mode for BagNet') 
 		# combine SRF and LRF together to instantiate PatchCURE
-		secure_layer = SecureLayer(lrf,input_size=feature_size,mask_size=mask_size,mask_stride=mask_stride) 
+		if args.alg == 'pcure':
+			secure_layer = SecureLayer(lrf,input_size=feature_size,mask_size=mask_size,mask_stride=mask_stride) 
+		elif args.alg == 'mr':
+			secure_layer = MRPC(lrf,input_size=feature_size,mask_size=mask_size,mask_stride=mask_stride) 
+		else:
+			raise NotImplementedError
+
 		model = PatchCURE(srf,secure_layer)
 		# need to create PatchCURE instance before load_checkpoint.
 		# need to remap the state_dict *key*. (the names of weight tensors are a bit different; I used nn.Sequential(srf,lrf) during training)

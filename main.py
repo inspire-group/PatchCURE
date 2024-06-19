@@ -25,6 +25,7 @@ parser.add_argument("--batch-size",default=4,type=int,help="batch size for infer
 parser.add_argument("--num-img",default=-1,type=int,help="the number of images for experiments; use the entire dataset if -1")
 #parser.add_argument("--num-mask",default=-1,type=int,help="the number of mask used in double-masking")
 parser.add_argument("--mask-stride",default=1,type=int,help="the mask stride (double-masking parameter)")
+parser.add_argument("--alg",default='pcure',choices=['pcure','pg','cbn','mr'],help="algorithm to use. set to pcure to obtain main results")
 parser.add_argument("--certify",action='store_true',help="do certification")
 parser.add_argument("--runtime",action='store_true',help="analyze runtime")
 parser.add_argument("--flops",action='store_true',help="analyze flops")
@@ -32,6 +33,8 @@ parser.add_argument("--memory",action='store_true',help="analyze memory usage")
 parser.add_argument("--undefended",action='store_true',help="experiment with undefended models")
 
 args = parser.parse_args()
+
+print(args)
 
 val_loader = get_data_loader(args)
 
@@ -57,11 +60,11 @@ certification_time = []
 flops_total = 0
 memory_allocated = []
 memory_reserved = []
-
+start_time = time.time()
 with torch.no_grad():
 	if args.runtime: # dry run
 		data = torch.ones(args.batch_size,3,224,224).cuda()
-		for i in range(5):
+		for i in range(3):
 			model(data)
 
 	for data,labels in tqdm(val_loader):
@@ -127,12 +130,15 @@ if args.runtime:
 	data_time = np.sum(data_time)/total
 	inference_time = np.sum(inference_time)/total
 	certification_time = np.sum(certification_time)/total
-	print(f'Data loading time: {data_time}; per-image inference time: {inference_time}; per-image certification time: {certification_time}')
+	print(f'Throughput: {1/(data_time+inference_time)} img/s')
+	#print(f'Data loading time: {data_time}; per-image inference time: {inference_time}; per-image certification time: {certification_time}')
 if args.flops:
 	print(f'Average per-image FLOP count: {flops_total/total}')
 
 if args.memory:
-	print(np.mean(memory_allocated[:-1]))
-	print(np.mean(memory_allocated[1:-1]))
-	print(np.mean(memory_reserved[:-1]))
-	print(np.mean(memory_reserved[1:-1]))
+	print(f'Memory allocated (MB): allocated {np.mean(memory_allocated[:-1])}')
+	#print(np.mean(memory_allocated[:-1]))
+	#print(np.mean(memory_allocated[1:-1]))
+	#print(np.mean(memory_reserved[:-1]))
+	#print(np.mean(memory_reserved[1:-1]))
+#print(f'Experiment run time : {(time.time()-start_time)/60},{(time.time()-start_time)/3600}')
