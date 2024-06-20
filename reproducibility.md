@@ -251,11 +251,11 @@ The following commands are for Table 5 (different models for CIFAR-10).
 ```shell
 # takes a few mins to run
 # PCURE-ViT14x2-k12
-python main.py --model  vitsrf14x2_masked --patch-size 32 --mask-stride 1 --certify  --runtime --alg mr 
+python main.py --model  vitsrf14x2_split12_masked_cifar --patch-size 32 --mask-stride 1 --certify  --runtime --dataset cifar
 # PCURE-ViT14x2-k6
-python main.py --model  vitsrf14x1_masked --patch-size 32 --mask-stride 1 --certify  --runtime --alg mr 
+python main.py --model  vitsrf14x2_split6_masked_cifar --patch-size 32 --mask-stride 1 --certify  --runtime --dataset cifar
 # PCURE-ViT2x2-k3
-python main.py --model  vitsrf2x2_masked --patch-size 32 --mask-stride 1 --certify  --runtime --alg mr 
+python main.py --model  vitsrf2x2_split3_masked_cifar --patch-size 32 --mask-stride 1 --certify  --runtime --dataset cifar
 
 ```
 
@@ -282,11 +282,11 @@ The following commands are for Table 7 (PatchCURE with larger models).
 ```shell
 # takes a few mins to run
 # ViT-B-14x2-k12
-python main.py --model  vitsrf14x2_masked --patch-size 32 --mask-stride 1 --certify  --runtime --alg mr 
+python main.py --model  vitsrf14x2_masked --patch-size 32 --mask-stride 1 --certify  --runtime --memory
 # ViT-B-14x2-k9
-python main.py --model  vitsrf14x1_masked --patch-size 32 --mask-stride 1 --certify  --runtime --alg mr 
-# ViT-L-14x2-k24
-python main.py --model  vitsrf2x2_masked --patch-size 32 --mask-stride 1 --certify  --runtime --alg mr 
+python main.py --model  vitsrf14x2_split9_masked --patch-size 32 --mask-stride 1 --certify  --runtime --memory
+# ViT-B-14x2-k12
+python main.py --model  vitlsrf14x2_masked --patch-size 32 --mask-stride 1 --certify  --runtime --memory
 
 ```
 
