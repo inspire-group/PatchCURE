@@ -45,6 +45,7 @@ Below is an overview of relevant files for the artifact evaluation. Please organ
 
 #### Datasets
 - [ImageNet](https://image-net.org/download.php) (ILSVRC2012) - requires manual download; also available on [Kaggle](https://www.kaggle.com/c/imagenet-object-localization-challenge/data)
+  - we provide a script for downloading `val` data . run `bash get_imagenet_val.sh`
 - [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html) - will be downloaded automatically within our code (not the main focus of our experiments; only used in Table 5)
 Move manually downloaded data to the directory `data/`.
 
