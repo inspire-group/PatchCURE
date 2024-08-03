@@ -24,6 +24,8 @@ Tested with `torch==1.13.1` and `timm==0.9.16`. This repository should be compat
 ├── README.md                        # this file 
 ├── requirements.txt                 # required packages
 ├── example_cmds.sh                  # command to reproduce PatchCURE results reported in the paper
+├── reproducibility.md               # detailed guide for experiments. used for artifact evaluation at USENIX Security 
+├── get_imagenet_val.sh              # script for downloading ImageNet val dataset.  
 | 
 ├── main.py                          # PatchCURE entry point.  
 | 
@@ -53,6 +55,7 @@ Tested with `torch==1.13.1` and `timm==0.9.16`. This repository should be compat
 2. Download data in **Datasets** to `data/`.
 3. Read [`checkpoints/README.md`](checkpoints/README.md) and download checkpoints from Google Drive [link](https://drive.google.com/drive/folders/146Qy-FKgSKrzuaaSluafhm3jYDQzYERj?usp=sharing) and move them to `checkpoints`.
 4. See [`example_cmd.sh`](example_cmds.sh) for example commands for running the code and reproducing PatchCURE results reported in the paper.
+5. See `reproducibility.md` for a more detailed guide for running experiments. It was used for artifact evaluation in USENIX Security.
 
 If anything is unclear, please open an issue or contact Chong Xiang (cxiang@princeton.edu).
 
